@@ -5,6 +5,21 @@ from sqlalchemy.orm import sessionmaker
 from sqlmodel import SQLModel
 from config import settings
 
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await init_db()
+    yield
+
+app = FastAPI(
+    title="Online_pharmacy_service",
+    description="Online pharmacy for save time and faster reach, anytime anywhere",
+    version="1.0.0",
+    lifespan=lifespan
+)
+
+
 
 #async engine
 async_engine = create_async_engine(
@@ -23,7 +38,23 @@ async def init_db():
         await conn.run_sync(SQLModel.metadata.create_all)
 
 
-#dependency injection code
+# for dependency injection...
+async def get_session() -> AsyncSession:
+    async_session = sessionmaker(
+        bind=async_engine,
+        class_=AsyncSession,
+        expire_on_commit=False
+    )
+    
+    async with async_session() as session:
+        yield session
+
+
+
+
+
 @app.get("/ping")
 async def root_response():
     return {"message": "pong"}
+
+
