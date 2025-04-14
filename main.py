@@ -7,6 +7,12 @@ from config import settings
 
 from contextlib import asynccontextmanager
 
+from views.user_view import user_router
+from views.product_view import product_router
+from views.orders_view import order_router
+from views.orderitems_view import orderitem_router
+from views.category_view import category_router
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
@@ -52,9 +58,8 @@ async def get_session() -> AsyncSession:
 
 
 
-
-@app.get("/ping")
-async def root_response():
-    return {"message": "pong"}
-
-
+app.include_router(user_router, tags=["Users"])
+app.include_router(product_router, tags=["Product"])
+app.include_router(order_router, tags=["Orders"])
+app.include_router(orderitem_router, tags=["Orderitems"])
+app.include_router(category_router, tags=["categories"])
